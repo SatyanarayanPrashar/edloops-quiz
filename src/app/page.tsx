@@ -53,7 +53,7 @@ export default function Home() {
     setIsLoading(true);
     setQuizData(null); // Reset quiz data before fetching new one
     try {
-      const res = await fetch("/api/quiz/generate", {
+      const res = await fetch("", {
         method: "POST",
         headers: { // Added Headers for JSON
           'Content-Type': 'application/json',
