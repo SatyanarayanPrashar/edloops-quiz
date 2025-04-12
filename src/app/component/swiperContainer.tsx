@@ -3,16 +3,17 @@
 import { useRef, useEffect, useState } from 'react';
 import type { Swiper as SwiperType } from 'swiper';
 import { FaCircleArrowDown, FaCircleArrowUp } from 'react-icons/fa6';
+import { useMediaQuery } from "usehooks-ts"; // Keep if needed *only* within this component
 
 import { cn } from '@/app/lib/utils';
 import { QuizData } from '../types/quiz';
-import dynamic from 'next/dynamic'; // Import dynamic
-
-// Dynamically import Swiper with SSR disabled
-const Swiper = dynamic(() => import('swiper/react').then(mod => mod.Swiper), { ssr: false });
-const SwiperSlide = dynamic(() => import('swiper/react').then(mod => mod.SwiperSlide), { ssr: false });
-
-import { QuizSlide } from './quiz_slides';
+import { QuizSlide } from './quiz_slides'; // Corrected path assumption
+import { Swiper, SwiperSlide } from 'swiper/react';
+// Import Swiper styles if you haven't already (usually in _app.tsx or layout.tsx for Pages Router, but here might be okay too if dynamically loaded)
+import 'swiper/css';
+// Import specific modules if needed, e.g., Navigation, Pagination
+// import 'swiper/css/navigation';
+// import { Navigation } from 'swiper/modules'; // Example
 
 interface QuizDisplayProps {
     quizData: QuizData;

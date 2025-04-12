@@ -1,10 +1,16 @@
 "use client"
 
-import Lottie from "lottie-react";
 import React from "react";
+import dynamic from 'next/dynamic'; // Import dynamic
+
+// Remove static Lottie import
+// import Lottie from "lottie-react";
 
 import happyEmoji from '@/app/assets/lottie/happyface.json';
 import sadEmoji from '@/app/assets/lottie/sadface.json';
+
+// Dynamically import Lottie
+const Lottie = dynamic(() => import('lottie-react'), { ssr: false });
 
 interface QuizSlideProps {
   index: number;

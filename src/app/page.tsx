@@ -1,18 +1,22 @@
 "use client";
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react'; // Add useEffect
+import dynamic from 'next/dynamic'; // Import dynamic
 import { QuizData } from '@/app/types/quiz';
-import { useMediaQuery } from "usehooks-ts";
+// Remove useMediaQuery import here if only used within QuizDisplay or dynamically loaded components
+// import { useMediaQuery } from "usehooks-ts";
 import { cn } from '@/app/lib/utils';
 import loadingIcon from "@/app/assets/lottie/loading.json";
-import Lottie from 'lottie-react';
+// Dynamically import Lottie with ssr: false
+const Lottie = dynamic(() => import('lottie-react'), { ssr: false });
 import QuizLanding from './component/options';
 import { Logo } from './component/logo';
 
-// import QuizDisplay from './component/swiperContainer';
-import dynamic from 'next/dynamic';
+// Dynamically import QuizDisplay with ssr: false
 const QuizDisplay = dynamic(() => import('./component/swiperContainer'), {
   ssr: false,
+  // Optional: Add a loading component while QuizDisplay loads
+  // loading: () => <p>Loading quiz interface...</p>,
 });
 
 export default function Home() {
@@ -24,94 +28,41 @@ export default function Home() {
   const [level, setLevel] = useState("");
   const [topic, setTopic] = useState("");
 
-  const isMobile = useMediaQuery("(max-width: 768px)");
+  // If you still need isMobile directly in Home, handle it safely:
+  const [isMobile, setIsMobile] = useState(false); // Default value
+  useEffect(() => {
+    // This effect runs only on the client
+    const checkMobile = () => window.matchMedia("(max-width: 768px)").matches;
+    setIsMobile(checkMobile());
+    // Optional: Add resize listener if needed
+  }, []); // Empty dependency array ensures it runs once on mount
 
   const bgColors = [
-    "bg-gradient-to-br from-pink-400 via-red-400 to-yellow-400",
-    "bg-gradient-to-br from-purple-400 via-blue-400 to-green-400",
-    "bg-gradient-to-br from-yellow-300 via-orange-400 to-pink-500",
-    "bg-gradient-to-br from-green-300 via-teal-400 to-blue-500",
-    "bg-gradient-to-br from-indigo-400 via-purple-400 to-pink-400",
+    // ... (keep your colors)
   ];
 
   const handleOptionClick = (quizIndex: number, optionIndex: number) => {
-    // Allow selection only if not already answered
-    if (selectedOptions[quizIndex] !== -1) return;
-
-    const isCorrect = optionIndex === quizData?.questions[quizIndex].correctOption;
-    const updatedSelections = [...selectedOptions];
-    const updatedStatus = [...answerStatus];
-
-    updatedSelections[quizIndex] = optionIndex;
-    updatedStatus[quizIndex] = isCorrect ? "correct" : "incorrect";
-
-    // setSelectedOptions(updatedSelections);
-    setAnswerStatus(updatedStatus);
+    // ... (keep your logic)
   };
 
   const fetchQuiz = async ({ topic, difficulty }: { topic: string, difficulty: string }) => {
-    // Guard against fetch if topic or difficulty is missing (shouldn't happen with button logic, but good practice)
-    if (!topic || !difficulty) {
-      console.error("Topic or difficulty missing.");
-      return;
-    }
-    setIsLoading(true);
-    setQuizData(null); // Reset quiz data before fetching new one
-    try {
-      const res = await fetch("", {
-        method: "POST",
-        headers: { // Added Headers for JSON
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          topic: topic,
-          difficulty: difficulty,
-        }),
-      });
-
-      if (!res.ok) { // Check for HTTP errors
-        throw new Error(`Failed to fetch quiz: ${res.statusText}`);
-      }
-
-      const data = await res.json();
-      const quiz = data.quiz;
-
-      if (!quiz || !quiz.questions || quiz.questions.length === 0) {
-        throw new Error("Received invalid quiz data structure");
-      }
-
-      setQuizData(quiz);
-      setSelectedOptions(Array(quiz.questions.length).fill(-1));
-      setAnswerStatus(Array(quiz.questions.length).fill(null));
-
-      const colors = quiz.questions.map(() => {
-        const randomIndex = Math.floor(Math.random() * bgColors.length);
-        return bgColors[randomIndex];
-      });
-      setRandomBgColors(colors);
-    } catch (error) {
-      console.error("Failed to fetch quiz:", error);
-      setQuizData(null); // Ensure quizData is null on error
-      // Optionally: set an error state here to show a specific message
-    } finally {
-      setIsLoading(false);
-    };
+    // ... (keep your logic)
   };
 
   return (
     <div className="h-screen bg-[#020617] flex items-center justify-center relative">
       {/* {!isMobile && <Logo classname="absolute top-4 left-4 z-10" />} */}
 
-      {/* Condition 1: Show Loading Indicator */}
       {isLoading && (
         <div className={cn("h-[95vh] w-[30vw] bg-gradient-to-br from-purple-400 via-blue-400 to-green-400 rounded-2xl flex flex-col items-center justify-center text-white p-4 text-center", isMobile && "w-full h-full rounded-none")}>
+          {/* Lottie is now dynamically imported, so it's safe */}
           {!isMobile && <Logo classname="absolute top-4 left-4 z-10" />}
           <Lottie animationData={loadingIcon} className="w-24 h-24" />
           <p className="mt-4 text-lg font-medium">Preparing questions for you...</p>
         </div>
       )}
 
-      {/* Condition 2: Show Quiz if not loading and data exists */}
+      {/* QuizDisplay is now dynamically imported, ensuring it only renders client-side */}
       {!isLoading && quizData && (
         <QuizDisplay
             quizData={quizData}
@@ -119,12 +70,11 @@ export default function Home() {
             answerStatus={answerStatus}
             randomBgColors={randomBgColors}
             handleOptionClick={handleOptionClick}
+            // isMobile prop is needed by QuizDisplay, pass the state
             isMobile={isMobile}
-            // No need to pass ref-related props anymore
         />
       )}
 
-      {/* Condition 3: Show Landing Page if not loading and no data */}
       {!isLoading && !quizData && (
         <QuizLanding
           topic={topic}
