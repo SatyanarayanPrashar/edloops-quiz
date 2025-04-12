@@ -6,9 +6,14 @@ import { useMediaQuery } from "usehooks-ts";
 import { cn } from '@/app/lib/utils';
 import loadingIcon from "@/app/assets/lottie/loading.json";
 import Lottie from 'lottie-react';
-import QuizDisplay from './component/swiperContainer';
 import QuizLanding from './component/options';
 import { Logo } from './component/logo';
+
+// import QuizDisplay from './component/swiperContainer';
+import dynamic from 'next/dynamic';
+const QuizDisplay = dynamic(() => import('./component/swiperContainer'), {
+  ssr: false,
+});
 
 export default function Home() {
   const [quizData, setQuizData] = useState<QuizData | null>(null);
